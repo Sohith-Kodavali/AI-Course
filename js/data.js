@@ -100,6 +100,15 @@ window.COURSE_DATA = {
       "unit": "Unit 3",
       "session": "Games, Minimax, Alpha-Beta Pruning",
       "file": "resources/AD203/week-06/adversarial_search.pdf"
+    },
+    {
+      "title": "Constraint Satisfaction Problems",
+      "type": "pdf",
+      "course": "AD203",
+      "week": 7,
+      "unit": "Unit 3",
+      "session": "CSP, Backtracking, Constraint Propagation, Arc Consistency",
+      "file": "resources/AD203/week-07/week-07.pdf"
     }
   ],
 
