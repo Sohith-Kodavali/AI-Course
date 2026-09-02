@@ -1,0 +1,571 @@
+/* ============================================================
+   Artificial Intelligence (AD203) — main.js
+   Nav, mobile menu, accordion, schedule, modals, reveal, counters
+   ============================================================ */
+(function () {
+  "use strict";
+
+  var prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------------- Loading screen ---------------- */
+  var LOADER_QUOTES = [
+    "Sleep is optional. Marks are not.",
+    "Study now, meme later.",
+    "My brain has 47 tabs open.",
+    "Ctrl+Z your regrets.",
+    "Coffee first. Consciousness second.",
+    "Deadlines: suggestions with anxiety.",
+    "Powered by chai and panic.",
+    "One more chapter. Really.",
+    "Genius = grind + snacks.",
+    "Ship the code. Fix it later.",
+    "The exam is basically tomorrow.",
+    "Read. Panic. Repeat.",
+    "It compiles. Do not touch.",
+    "Google is a study skill.",
+    "My GPA is a floating point.",
+    "Focus is a muscle. Flex.",
+    "Sleep is a myth. Marks are real.",
+    "Backspace, the mightiest key.",
+    "I don't procrastinate. I preload.",
+    "AI won't replace you. Your notes might.",
+    "Study group = snack group.",
+    "Neural nets and neural naps.",
+    "There is no elevator. Take the stairs.",
+    "One line of code, ten Stack Overflow tabs.",
+    "My model overfits. So do my jeans.",
+    "The compiler is judging you.",
+    "Attention is all you need.",
+    "Print your notes, not your excuses.",
+    "Overslept? Call it self-optimization.",
+    "Chai is a study strategy.",
+    "The syllabus is a horror novel.",
+    "Fake it till you graduate.",
+    "Effort compounds. So does laziness.",
+    "Highlight it. Feel productive.",
+    "Read once. Understand never.",
+    "Alpha-beta prune your DMs.",
+    "Every bug is a lesson in humility.",
+    "Wisdom begins in Wikipedia.",
+    "My study playlist is judging me.",
+    "One page a day keeps the panic away.",
+    "The mind is a browser. Close tabs.",
+    "Discipline > motivation.",
+    "Notes today, sleep tomorrow.",
+    "Practice makes permanent.",
+    "It's not procrastination. It's marination.",
+    "The exam does not fear you.",
+    "Trust the gradient descent.",
+    "Study like the wifi will die.",
+    "Backpropagate your mistakes.",
+    "Nothing motivates like panic.",
+    "Rome wasn't debugged in a day.",
+    "Save early. Save often.",
+    "Just one more YouTube tutorial…",
+    "The library is a vibe.",
+    "Focus. Then treat yourself.",
+    "Deep learning, shallow sleep.",
+    "The A* of studying: start.",
+    "Reward yourself with a nap.",
+    "Read the question. Then read it again.",
+    "The answer is in the textbook. Probably.",
+    "Every genius Googled it first.",
+    "Study now, brag later.",
+    "My brain is 90% cache miss.",
+    "The best editor is discipline.",
+    "Skip the meme. Save the marks.",
+    "Loading knowledge… please wait.",
+    "One equation at a time.",
+    "The mitochondria is the powerhouse. That's it.",
+    "Small progress is still progress.",
+    "The night before saves the semester.",
+    "Take notes. Not screenshots.",
+    "Curiosity beats caffeine.",
+    "My IDE believes in me.",
+    "One PDF away from enlightenment.",
+    "Consistency > intensity.",
+    "The exam is a plot twist.",
+    "Study smart. Sleep smarter.",
+    "Bugs are just features in disguise.",
+    "You miss 100% of the topics you skip.",
+    "The syllabus is not the enemy.",
+    "Focus mode: engaged.",
+    "Perfect is the enemy of submitted.",
+    "The best time to study was yesterday.",
+    "Do the boring thing. It works.",
+    "Naps are neural regularization.",
+    "One chapter. That's it. Just one.",
+    "Fear the exam. Respect the syllabus.",
+    "The library never lies.",
+    "Study today, flex tomorrow.",
+    "Attention span: currently rebooting.",
+    "The keyboard is mightier than the pen.",
+    "Every expert was once a disaster.",
+    "Coffee, then chaos.",
+    "The best debugger is sleep.",
+    "Trust the process. Skip the drama.",
+    "Read the docs. It's a superpower.",
+    "Marks are made in the boring hours.",
+    "One more topic. Just one.",
+    "Your future self is watching.",
+    "The grind is the glow-up.",
+    "Loading brilliance…"
+  ];
+
+  var loader = document.getElementById("loader");
+  var loaderQuoteEl = document.getElementById("loaderQuote");
+  var loaderHidden = false;
+  var loaderReadyAt = Date.now() + 3200;
+  var heroRevealed = false;
+
+  if (loaderQuoteEl) {
+    var idx = Math.floor(Math.random() * LOADER_QUOTES.length);
+    loaderQuoteEl.textContent = LOADER_QUOTES[idx];
+  }
+
+  function revealHero() {
+    if (heroRevealed) return;
+    heroRevealed = true;
+    var hero = document.querySelector(".hero");
+    if (!hero) return;
+    hero.querySelectorAll("[data-reveal]").forEach(function (el, i) {
+      setTimeout(function () { el.classList.add("is-visible"); }, 120 + i * 110);
+    });
+  }
+
+  function removeLoader() {
+    if (loader && loader.parentNode) loader.parentNode.removeChild(loader);
+  }
+
+  function hideLoader() {
+    if (!loader || loaderHidden) return;
+    var wait = Math.max(0, loaderReadyAt - Date.now());
+    loaderHidden = true;
+    setTimeout(function () {
+      loader.classList.add("is-hidden");
+      revealHero();
+      setTimeout(removeLoader, 520);
+    }, wait);
+  }
+
+  if (loader) {
+    window.addEventListener("load", hideLoader);
+    setTimeout(hideLoader, 3300);
+    loader.addEventListener("click", hideLoader);
+  } else {
+    revealHero();
+  }
+
+  /* ---------------- Schedule data (static resources) ---------------- */
+  // Map teaching weeks to units. Resources live in resources/AD203/Unit-N/
+  // and are listed in resources/data.js (window.COURSE_DATA.resources).
+  var WEEK_UNIT = {
+    1: 1, 2: 1,
+    3: 2, 4: 2, 5: 2,
+    6: 3, 7: 3,
+    8: 4, 9: 4, 10: 4,
+    11: 5, 12: 5,
+    13: 6, 14: 6
+  };
+
+  function resourcesForWeek(week) {
+    var unitNum = WEEK_UNIT[week];
+    var data = window.COURSE_DATA || { resources: [] };
+    return (data.resources || []).filter(function (r) {
+      if (r.week !== undefined && r.week !== null) {
+        return String(r.week) === String(week);
+      }
+      return String(r.unit || "").replace("Unit ", "") === String(unitNum);
+    });
+  }
+
+  var SCHEDULE = [
+    { week: 1, title: "Introduction to Artificial Intelligence", topics: "History of AI, Philosophy of AI, Definitions and Applications" },
+    { week: 2, title: "Agents & Problem Formulation", topics: "Intelligent Agents, PEAS, Environment Types, State Space Representation" },
+    { week: 3, title: "Uninformed Search", topics: "BFS, DFS, DLS, IDS, Uniform Cost Search" },
+    { week: 4, title: "Informed Search", topics: "Greedy Search, A*, Heuristics" },
+    { week: 5, title: "Local Search", topics: "Hill Climbing, Simulated Annealing, Genetic Algorithms" },
+    { week: 6, title: "Adversarial Search", topics: "Games, Minimax, Alpha-Beta Pruning" },
+    { week: 7, title: "Constraint Satisfaction", topics: "CSP, Backtracking, Arc Consistency" },
+    { week: 8, title: "Probability", topics: "Probability Review, Bayes Theorem" },
+    { week: 9, title: "Bayesian Networks", topics: "Conditional Independence, Inference, Sampling" },
+    { week: 10, title: "Decision Theory", topics: "Utility, Decision Networks" },
+    { week: 11, title: "Markov Decision Processes", topics: "Bellman Equations, Policy Evaluation, Value Iteration" },
+    { week: 12, title: "Reinforcement Learning", topics: "Monte Carlo, TD Learning, Q-Learning, SARSA" },
+    { week: 13, title: "Deep Learning & Deep RL", topics: "Perceptron, MLP, CNN, RNN, DQN, Actor-Critic" },
+    { week: 14, title: "LLMs, Ethics & Revision", topics: "Transformers, Large Language Models, Responsible AI, Revision" }
+  ];
+
+  /* ---------------- Icon helpers (lucide paths) ---------------- */
+  var ICONS = {
+    calendar: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>',
+    fileText: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>',
+    download: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>',
+    eye: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>',
+    bookOpen: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>',
+    fileCode: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 12.5 8 15l2 2.5"/><path d="m14 12.5 2 2.5-2 2.5"/></svg>',
+    notebookPen: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4"/><path d="M2 6h4"/><path d="M2 10h4"/><path d="M2 14h4"/><path d="M2 18h4"/><path d="M21.378 5.626a1 1 0 1 0-3.004-3.004l-5.01 5.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/></svg>',
+    inbox: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>',
+    info: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>'
+  };
+
+  /* ---------------- Render schedule ---------------- */
+  var scheduleList = document.getElementById("scheduleList");
+  if (scheduleList) {
+    var rows = SCHEDULE.map(function (entry) {
+      var has = resourcesForWeek(entry.week).length > 0;
+      var row = document.createElement("div");
+      row.className = "schedule-row";
+      row.setAttribute("data-reveal", "");
+      row.innerHTML =
+        '<span class="schedule-row__chip">W' + entry.week + "</span>" +
+        '<div>' +
+          '<p class="schedule-row__week">Week ' + entry.week + "</p>" +
+          '<h3 class="schedule-row__title">' + entry.title + "</h3>" +
+          '<p class="schedule-row__topics">' + entry.topics + "</p>" +
+        "</div>" +
+        '<div class="schedule-row__actions">' +
+          '<button class="btn btn--ghost btn--sm" data-open-modal="' + entry.week + '" aria-haspopup="dialog">' +
+            ICONS.fileText +
+            "Course Materials" +
+          "</button>" +
+          (has ? "" : '<span class="schedule-row__hint">Not yet uploaded</span>') +
+        "</div>";
+      scheduleList.appendChild(row);
+    });
+  }
+
+  /* ---------------- Render reference books ---------------- */
+  var booksList = document.getElementById("booksList");
+  if (booksList) {
+    var books = (window.COURSE_DATA && window.COURSE_DATA.books) || [];
+    var bookIcon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>';
+
+    books.forEach(function (book) {
+      var card = document.createElement("article");
+      card.className = "card book-card";
+      card.setAttribute("data-reveal", "");
+
+      var meta =
+        '<p class="book-card__author">' + esc(book.author || "") + "</p>" +
+        '<p class="book-card__meta">' +
+          esc([book.edition, book.publisher].filter(Boolean).join(" · ")) +
+        "</p>";
+
+      if (book.note) {
+        meta += '<span class="book-card__badge">' + esc(book.note) + "</span>";
+      }
+
+      var actions = "";
+      if (book.file) {
+        actions +=
+          '<a class="book-card__action" href="' + esc(book.file) + '" target="_blank" rel="noopener">' +
+            ICONS.eye + "View" +
+          "</a>" +
+          '<a class="book-card__action" href="' + esc(book.file) + '" download>' +
+            ICONS.download + "Download" +
+          "</a>";
+      } else if (book.link) {
+        actions +=
+          '<a class="book-card__action" href="' + esc(book.link) + '" target="_blank" rel="noopener">' +
+            ICONS.eye + "View book" +
+          "</a>";
+      }
+
+      card.innerHTML =
+        '<div class="card__icon" aria-hidden="true">' + bookIcon + "</div>" +
+        '<h3 class="book-card__title">' + esc(book.title || "") + "</h3>" +
+        meta +
+        (actions ? '<div class="book-card__actions">' + actions + "</div>" : "");
+
+      booksList.appendChild(card);
+    });
+
+    if (books.length === 0) {
+      booksList.innerHTML =
+        '<p class="books-empty">Reference books will be shared here soon.</p>';
+    }
+  }
+
+  /* ---------------- Modal ---------------- */
+  var modal = document.getElementById("modal");
+  var modalBody = document.getElementById("modalBody");
+  var modalTitle = document.getElementById("modalTitle");
+  var modalSub = document.getElementById("modalSub");
+  var lastFocused = null;
+
+  function esc(s) {
+    var d = document.createElement("div");
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function openModal(week) {
+    if (!modal || !modalBody) return;
+    lastFocused = document.activeElement;
+    var list = resourcesForWeek(week);
+
+    var html = "";
+    if (list.length === 0) {
+      html +=
+        '<div class="modal__empty">' + ICONS.inbox +
+          "<p><strong>No materials uploaded yet.</strong></p>" +
+          "<p style=\"font-size:0.85rem;\">Lecture slides for this week will appear here when published.</p>" +
+        "</div>";
+    } else {
+      list.forEach(function (item) {
+        var href = item.file;
+        html +=
+          '<div class="material">' +
+            '<span class="material__icon">' + ICONS.fileText + "</span>" +
+            '<div class="material__meta">' +
+              '<p class="material__name">' + esc(item.title) + "</p>" +
+              '<p class="material__type">' + esc((item.session || "") + (item.session ? " · " : "") + String(item.type || "").toUpperCase()) + "</p>" +
+            "</div>" +
+            '<div class="material__actions">' +
+              '<a class="material__action material__action--view" href="' + esc(href) + '" target="_blank" rel="noopener">' + ICONS.eye + "View / Open</a>" +
+              '<a class="material__action material__action--dl" href="' + esc(href) + '" download>' + ICONS.download + "Download</a>" +
+            "</div>" +
+          "</div>";
+      });
+    }
+
+    modalBody.innerHTML = html;
+    modalTitle.textContent = "Week " + week + " Materials";
+    modalSub.textContent = "Lecture slides, notes, assignments and resources.";
+
+    modal.hidden = false;
+    // force reflow so the transition plays
+    void modal.offsetWidth;
+    modal.classList.add("is-open");
+    document.body.style.overflow = "hidden";
+
+    var closeBtn = modal.querySelector(".modal__close");
+    if (closeBtn) closeBtn.focus();
+  }
+
+  function closeModal() {
+    if (!modal) return;
+    modal.classList.remove("is-open");
+    document.body.style.overflow = "";
+    var done = false;
+    var finish = function () {
+      if (done) return;
+      done = true;
+      modal.hidden = true;
+      modal.removeEventListener("transitionend", finish);
+      clearTimeout(timer);
+    };
+    var timer = setTimeout(finish, 350);
+    modal.addEventListener("transitionend", finish);
+    if (lastFocused && typeof lastFocused.focus === "function") lastFocused.focus();
+  }
+
+  document.addEventListener("click", function (e) {
+    var opener = e.target.closest("[data-open-modal]");
+    if (opener) {
+      openModal(parseInt(opener.getAttribute("data-open-modal"), 10));
+      return;
+    }
+    if (e.target.closest("[data-modal-close]")) closeModal();
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && modal && !modal.hidden) closeModal();
+  });
+
+  /* ---------------- Accordion ---------------- */
+  var accordion = document.getElementById("accordion");
+  if (accordion) {
+    accordion.addEventListener("click", function (e) {
+      var trigger = e.target.closest(".accordion__trigger");
+      if (!trigger) return;
+      var item = trigger.closest(".accordion__item");
+      var isOpen = item.classList.contains("is-open");
+
+      // close all, then open the clicked one (single-open accordion)
+      accordion.querySelectorAll(".accordion__item.is-open").forEach(function (openItem) {
+        openItem.classList.remove("is-open");
+        openItem.querySelector(".accordion__trigger").setAttribute("aria-expanded", "false");
+      });
+
+      if (!isOpen) {
+        item.classList.add("is-open");
+        trigger.setAttribute("aria-expanded", "true");
+      }
+    });
+  }
+
+  /* ---------------- Navbar ---------------- */
+  var nav = document.getElementById("nav");
+  var navToggle = document.getElementById("navToggle");
+
+  function onScroll() {
+    if (nav) nav.classList.toggle("is-scrolled", window.scrollY > 8);
+  }
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+
+  if (navToggle) {
+    navToggle.addEventListener("click", function () {
+      var open = navToggle.getAttribute("aria-expanded") === "true";
+      navToggle.setAttribute("aria-expanded", String(!open));
+      if (nav) nav.classList.toggle("is-menu-open", !open);
+    });
+  }
+
+  // close mobile menu when a link is chosen
+  document.querySelectorAll("[data-nav]").forEach(function (link) {
+    link.addEventListener("click", function () {
+      navToggle.setAttribute("aria-expanded", "false");
+      if (nav) nav.classList.remove("is-menu-open");
+    });
+  });
+
+  /* ---------------- Active section highlight ---------------- */
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll("[data-nav]"));
+  var sections = navLinks
+    .map(function (link) {
+      var id = link.getAttribute("href").replace(/^#/, "");
+      return document.getElementById(id);
+    })
+    .filter(Boolean);
+
+  var spy = new IntersectionObserver(
+    function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          navLinks.forEach(function (link) {
+            link.classList.toggle("is-active", link.getAttribute("href") === "#" + entry.target.id);
+          });
+        }
+      });
+    },
+    { rootMargin: "-40% 0px -55% 0px" }
+  );
+  sections.forEach(function (s) { spy.observe(s); });
+
+  /* ---------------- Scroll reveal ---------------- */
+  var revealEls = document.querySelectorAll("[data-reveal]");
+  if ("IntersectionObserver" in window && !prefersReduced) {
+    var revealObs = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            revealObs.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+    );
+    revealEls.forEach(function (el) {
+      // hero reveals are driven by revealHero() after the loader hides
+      if (!el.closest(".hero")) revealObs.observe(el);
+    });
+  } else {
+    revealEls.forEach(function (el) { el.classList.add("is-visible"); });
+  }
+
+  /* ---------------- Count-up stats ---------------- */
+  var counters = document.querySelectorAll("[data-count]");
+  function animateCount(el) {
+    var target = parseInt(el.getAttribute("data-count"), 10);
+    if (prefersReduced) {
+      el.textContent = target;
+      return;
+    }
+    var dur = 1100;
+    var start = null;
+    function step(ts) {
+      if (!start) start = ts;
+      var p = Math.min((ts - start) / dur, 1);
+      var eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(eased * target);
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  if ("IntersectionObserver" in window) {
+    var countObs = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            animateCount(entry.target);
+            countObs.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+    counters.forEach(function (el) { countObs.observe(el); });
+  } else {
+    counters.forEach(function (el) { el.textContent = el.getAttribute("data-count"); });
+  }
+
+  /* ---------------- Grading progress bars ---------------- */
+  var fills = document.querySelectorAll("[data-fill]");
+  if ("IntersectionObserver" in window && !prefersReduced) {
+    var fillObs = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.style.width = entry.target.getAttribute("data-fill");
+            fillObs.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.4 }
+    );
+    fills.forEach(function (el) { fillObs.observe(el); });
+  } else {
+    fills.forEach(function (el) { el.style.width = el.getAttribute("data-fill"); });
+  }
+
+  /* ---------------- Footer year ---------------- */
+  var yearEl = document.getElementById("year");
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+  /* ---------------- Custom cursor ---------------- */
+  var finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  if (finePointer && !prefersReduced) {
+    document.body.classList.add("custom-cursor-active");
+    var dot = document.createElement("div");
+    dot.className = "custom-cursor custom-cursor--dot";
+    var ring = document.createElement("div");
+    ring.className = "custom-cursor custom-cursor--ring";
+    document.body.appendChild(dot);
+    document.body.appendChild(ring);
+
+    var mx = -100, my = -100, rx = -100, ry = -100;
+    var raf = null;
+
+    function render() {
+      rx += (mx - rx) * 0.18;
+      ry += (my - ry) * 0.18;
+      dot.style.transform = "translate(" + mx + "px, " + my + "px) translate(-50%, -50%)";
+      ring.style.transform = "translate(" + rx + "px, " + ry + "px) translate(-50%, -50%)";
+      if (Math.abs(mx - rx) > 0.5 || Math.abs(my - ry) > 0.5) raf = requestAnimationFrame(render);
+      else raf = null;
+    }
+
+    document.addEventListener("pointermove", function (e) {
+      mx = e.clientX; my = e.clientY;
+      dot.style.opacity = "1"; ring.style.opacity = "1";
+      if (!raf) raf = requestAnimationFrame(render);
+    }, { passive: true });
+
+    document.addEventListener("pointerdown", function () { ring.classList.add("is-pressed"); });
+    document.addEventListener("pointerup", function () { ring.classList.remove("is-pressed"); });
+
+    document.addEventListener("pointerover", function (e) {
+      var t = e.target;
+      var interactive = t.closest && t.closest("a, button, [role=button], input, select, textarea, .watermark, .accordion__trigger");
+      ring.classList.toggle("is-hover", !!interactive);
+    });
+
+    document.addEventListener("mouseleave", function () {
+      dot.style.opacity = "0"; ring.style.opacity = "0";
+    });
+  }
+})();
