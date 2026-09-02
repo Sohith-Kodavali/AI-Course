@@ -1197,11 +1197,6 @@ body.is-managing .nav__manage {
   }
 }
 
-/* ---------- Watermark — hide on small screens to free footer space ---------- */
-@media (max-width: 600px) {
-  .watermark { display: none; }
-}
-
 /* ---------- Reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
   .tabs__panel { animation: none; }
