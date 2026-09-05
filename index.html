@@ -466,6 +466,36 @@
       </div>
     </section>
 
+    <!-- ======================= TRY IT — MINIMAX GAME ======================= -->
+    <section class="section" id="playground">
+      <div class="container" style="max-width:640px;">
+        <div class="section-head section-head--center">
+          <p class="eyebrow">Try It Live</p>
+          <h2 class="section-title">You vs Minimax</h2>
+          <p class="section-lede">The same algorithm from Module III — Games &amp; Adversarial Search. Try to beat it. You can't.</p>
+        </div>
+
+        <div class="ttt" data-reveal="">
+          <div class="ttt__status" id="tttStatus">Your turn — you're <strong>X</strong></div>
+          <div class="ttt__board" id="tttBoard" role="grid" aria-label="Tic-tac-toe board">
+            <button class="ttt__cell" data-i="0" aria-label="Cell 1"></button>
+            <button class="ttt__cell" data-i="1" aria-label="Cell 2"></button>
+            <button class="ttt__cell" data-i="2" aria-label="Cell 3"></button>
+            <button class="ttt__cell" data-i="3" aria-label="Cell 4"></button>
+            <button class="ttt__cell" data-i="4" aria-label="Cell 5"></button>
+            <button class="ttt__cell" data-i="5" aria-label="Cell 6"></button>
+            <button class="ttt__cell" data-i="6" aria-label="Cell 7"></button>
+            <button class="ttt__cell" data-i="7" aria-label="Cell 8"></button>
+            <button class="ttt__cell" data-i="8" aria-label="Cell 9"></button>
+          </div>
+          <div class="ttt__footer">
+            <div class="ttt__score" id="tttScore">You <strong id="tttWins">0</strong> · AI <strong id="tttLosses">0</strong> · Draws <strong id="tttDraws">0</strong></div>
+            <button class="btn btn--ghost btn--sm" id="tttReset" type="button">Reset board</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ======================= WEEKLY SCHEDULE ======================= -->
     <section class="section" id="schedule">
       <div class="container">

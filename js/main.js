@@ -760,4 +760,116 @@
       dot.style.opacity = "0"; ring.style.opacity = "0";
     });
   }
+
+  /* ---------------- Tic-Tac-Toe vs Minimax ---------------- */
+  var tttBoardEl = document.getElementById("tttBoard");
+  if (tttBoardEl) {
+    var tttStatus = document.getElementById("tttStatus");
+    var tttReset = document.getElementById("tttReset");
+    var tttWinsEl = document.getElementById("tttWins");
+    var tttLossesEl = document.getElementById("tttLosses");
+    var tttDrawsEl = document.getElementById("tttDraws");
+    var cells = tttBoardEl.querySelectorAll(".ttt__cell");
+    var HUMAN = "X", AI = "O";
+    var board, gameOver, wins = 0, losses = 0, draws = 0;
+
+    var LINES = [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
+    ];
+
+    function winnerOf(b) {
+      for (var i = 0; i < LINES.length; i++) {
+        var a = LINES[i][0], c = LINES[i][1], d = LINES[i][2];
+        if (b[a] && b[a] === b[c] && b[a] === b[d]) return { player: b[a], line: LINES[i] };
+      }
+      if (b.indexOf("") === -1) return { player: "draw", line: null };
+      return null;
+    }
+
+    function minimax(b, player) {
+      var res = winnerOf(b);
+      if (res) {
+        if (res.player === AI) return { score: 10 };
+        if (res.player === HUMAN) return { score: -10 };
+        return { score: 0 };
+      }
+      var best = { score: player === AI ? -Infinity : Infinity, move: -1 };
+      for (var i = 0; i < 9; i++) {
+        if (b[i] !== "") continue;
+        b[i] = player;
+        var s = minimax(b, player === AI ? HUMAN : AI).score;
+        b[i] = "";
+        if (player === AI ? s > best.score : s < best.score) {
+          best.score = s;
+          best.move = i;
+        }
+      }
+      return best;
+    }
+
+    function paint() {
+      for (var i = 0; i < 9; i++) {
+        var cell = cells[i];
+        cell.textContent = board[i];
+        cell.classList.toggle("is-x", board[i] === HUMAN);
+        cell.classList.toggle("is-o", board[i] === AI);
+        cell.classList.remove("is-win");
+        cell.disabled = gameOver || board[i] !== "";
+      }
+    }
+
+    function setStatus(text, cls) {
+      tttStatus.textContent = text;
+      tttStatus.className = "ttt__status" + (cls ? " " + cls : "");
+    }
+
+    function checkEnd() {
+      var res = winnerOf(board);
+      if (!res) return false;
+      gameOver = true;
+      if (res.line) res.line.forEach(function (i) { cells[i].classList.add("is-win"); });
+      if (res.player === HUMAN) { wins++; setStatus("You won. The minimax gods are shaken.", "is-win"); }
+      else if (res.player === AI) { losses++; setStatus("Minimax wins. Try again.", "is-lose"); }
+      else { draws++; setStatus("Draw. Optimal play meets optimal play.", "is-draw"); }
+      tttWinsEl.textContent = wins;
+      tttLossesEl.textContent = losses;
+      tttDrawsEl.textContent = draws;
+      for (var i = 0; i < 9; i++) cells[i].disabled = true;
+      return true;
+    }
+
+    function aiMove() {
+      setStatus("Minimax is thinking…");
+      setTimeout(function () {
+        var move = minimax(board.slice(), AI).move;
+        if (move >= 0) board[move] = AI;
+        paint();
+        if (!checkEnd()) setStatus("Your turn — you're X");
+      }, 260);
+    }
+
+    function reset() {
+      board = ["","","","","","","","",""];
+      gameOver = false;
+      paint();
+      setStatus("Your turn — you're X");
+    }
+
+    cells.forEach(function (cell) {
+      cell.addEventListener("click", function () {
+        var i = parseInt(cell.getAttribute("data-i"), 10);
+        if (gameOver || board[i] !== "") return;
+        board[i] = HUMAN;
+        paint();
+        if (checkEnd()) return;
+        for (var k = 0; k < 9; k++) cells[k].disabled = true;
+        aiMove();
+      });
+    });
+
+    tttReset.addEventListener("click", reset);
+    reset();
+  }
 })();
