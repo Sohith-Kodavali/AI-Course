@@ -93,6 +93,15 @@ window.COURSE_DATA = {
       "file": "resources/AD203/week-04/informed_search.pdf"
     },
     {
+      "title": "Local Search",
+      "type": "note",
+      "course": "AD203",
+      "week": 5,
+      "unit": "Unit 2",
+      "session": "Hill Climbing, Simulated Annealing, Genetic Algorithms",
+      "note": "Slides for Local Search haven't been shared yet. For now, please read from the reference textbook — Russell & Norvig, Chapter 4 (Search in Complex Environments)."
+    },
+    {
       "title": "Adversarial Search",
       "type": "pdf",
       "course": "AD203",

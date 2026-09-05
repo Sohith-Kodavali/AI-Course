@@ -506,6 +506,15 @@
         "</div>";
     } else {
       list.forEach(function (item) {
+        if (item.type === "note") {
+          html +=
+            '<div class="modal__notice">' + ICONS.info +
+              "<div>" +
+                "<strong>" + esc(item.title) + "</strong> — " + esc(item.note || "") +
+              "</div>" +
+            "</div>";
+          return;
+        }
         var href = item.file;
         html +=
           '<div class="material">' +
