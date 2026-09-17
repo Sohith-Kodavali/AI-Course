@@ -118,6 +118,15 @@ window.COURSE_DATA = {
       "unit": "Unit 3",
       "session": "CSP, Backtracking, Constraint Propagation, Arc Consistency",
       "file": "resources/AD203/week-07/week-07.pdf"
+    },
+    {
+      "title": "Probability for AI",
+      "type": "pdf",
+      "course": "AD203",
+      "week": 8,
+      "unit": "Unit 4",
+      "session": "Probability Review, Bayes Theorem, Conditional Independence",
+      "file": "resources/AD203/week-08/probaility_ai.pdf"
     }
   ],
 
