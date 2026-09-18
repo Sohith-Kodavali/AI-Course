@@ -127,6 +127,15 @@ window.COURSE_DATA = {
       "unit": "Unit 4",
       "session": "Probability Review, Bayes Theorem, Conditional Independence",
       "file": "resources/AD203/week-08/probaility_ai.pdf"
+    },
+    {
+      "title": "Naive Bayes",
+      "type": "pdf",
+      "course": "AD203",
+      "week": 8,
+      "unit": "Unit 4",
+      "session": "Naive Bayes Classifier",
+      "file": "resources/AD203/week-08/naivebayes_iiitdm.pdf"
     }
   ],
 
