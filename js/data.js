@@ -136,6 +136,15 @@ window.COURSE_DATA = {
       "unit": "Unit 4",
       "session": "Naive Bayes Classifier",
       "file": "resources/AD203/week-08/naivebayes_iiitdm.pdf"
+    },
+    {
+      "title": "Reinforcement Learning",
+      "type": "pdf",
+      "course": "AD203",
+      "week": 12,
+      "unit": "Unit 5",
+      "session": "Reinforcement Learning, RL with Generative AI",
+      "file": "resources/AD203/week-12/RL_GenAI.pdf"
     }
   ],
 
