@@ -145,6 +145,15 @@ window.COURSE_DATA = {
       "unit": "Unit 5",
       "session": "Reinforcement Learning, RL with Generative AI",
       "file": "resources/AD203/week-12/RL_GenAI.pdf"
+    },
+    {
+      "title": "Reinforcement Learning & Generative AI (Part 2)",
+      "type": "pdf",
+      "course": "AD203",
+      "week": 12,
+      "unit": "Unit 5",
+      "session": "Reinforcement Learning with Generative AI (Part 2)",
+      "file": "resources/AD203/week-12/RL_GenAI(part 2).pdf"
     }
   ],
 
