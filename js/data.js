@@ -154,6 +154,15 @@ window.COURSE_DATA = {
       "unit": "Unit 5",
       "session": "Reinforcement Learning with Generative AI (Part 2)",
       "file": "resources/AD203/week-12/RL_GenAI(part 2).pdf"
+    },
+    {
+      "title": "AI — Linear Regression",
+      "type": "ppt",
+      "course": "AD203",
+      "week": 12,
+      "unit": "Unit 5",
+      "session": "Linear Regression",
+      "file": "resources/AD203/week-12/ai_linear_regression.pptx"
     }
   ],
 
